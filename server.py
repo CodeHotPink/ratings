@@ -5,7 +5,7 @@ from jinja2 import StrictUndefined
 from flask import (Flask, render_template, redirect, request, flash, session)
 # from flask_debugtoolbar import DebugToolbarExtension
 
-from model import User, Ratings, Movie, connect_to_db, db
+from model import User, Rating, Movie, connect_to_db, db
 
 
 app = Flask(__name__)
@@ -32,13 +32,30 @@ def user_list():
     users = User.query.all()
     return render_template("user_list.html", users=users)
 
+@app.route("/register", methods=["GET"])
+def register_form():
+    return render_template("register_form.html")
+
 @app.route('/register', methods=["POST"])
 def register_process():
+    password = request.form.get("password")
     email = request.form.get("email")
-    user = User()
-    user.email = email
+    print(email)
 
-    return redirect("/")
+    if  User.query.filter_by(email=email).first():
+        flash('This email is already registered')
+        return redirect("/login")
+    else:
+        user = User()
+        user.email = email 
+        user.password = password
+        db.session.add(user)
+        db.session.commit()
+        return redirect("/")
+
+@app.route('/login')
+def login_form():
+    return render_template("login_form.html",)
 
 
 if __name__ == "__main__":
