@@ -31,6 +31,20 @@ def movies_list():
     movies = Movie.query.order_by('title').all()
     return render_template("movies_list.html", movies=movies)
 
+@app.route('/movies/<int:movie_id>')
+def movie_details(movie_id):
+    movie = Movie.query.get(movie_id)
+    movie_ratings = Rating.query.filter_by(movie_id=movie_id).all()
+    return render_template('movie.html', movie=movie,
+                                        movie_ratings=movie_ratings)
+
+@app.route('/add_rating', methods=['POST'])
+def add_rating():
+    score = request.form.get("score")
+    user_id = session['user_id']
+    rating = Rating(movie_id=)
+
+
 @app.route('/users')
 def user_list():
     """Shows list of users."""

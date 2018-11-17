@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>User {{ user.user_id }}</h2>
+  Email: {{ user.email }}<br> 
+  User:{{ user.user_id }}<br>
+  Age:{{ user.age }}<br>
+  Zipcode:{{ user.zipcode }}<br>
+  <h2>Rated Movies:</h2>
+   {% for movie in rated_movies %}
+    <li>
+      <a href="/movies/{{ movie.movie_id }}">
+          {{ movie.movie.title }}</a> : {{ movie.score }}/5
+    </li>
+  {% endfor %}
+  
+{% endblock %}
