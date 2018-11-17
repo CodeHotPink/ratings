@@ -25,6 +25,11 @@ def index():
     html = render_template("homepage.html")
     return html
 
+@app.route('/movies')
+def movies_list():
+    """Shows list of movies"""
+    movies = Movie.query.order_by('title').all()
+    return render_template("movies_list.html", movies=movies)
 
 @app.route('/users')
 def user_list():
