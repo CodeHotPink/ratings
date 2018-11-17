@@ -25,12 +25,22 @@ def index():
     html = render_template("homepage.html")
     return html
 
+
 @app.route('/users')
 def user_list():
     """Shows list of users."""
 
     users = User.query.all()
     return render_template("user_list.html", users=users)
+
+
+@app.route('/users/<int:user_id>')
+def user_details(user_id):
+    """Show info about user"""
+    user = User.query.get(user_id)
+    rated_movies = Rating.query.filter_by(user_id=user.user_id).all() 
+    return render_template("user.html", user=user,
+                                        rated_movies=rated_movies)    
 
 @app.route("/register", methods=["GET"])
 def register_form():
@@ -64,9 +74,9 @@ def login_request():
     if User.query.filter_by(email=email).first():
         user = User.query.filter_by(email=email).first()
         if user.password == password:
-            session[user.email] = True
+            session["user_id"] = user.user_id
             flash('You are successfully logged in.')
-            return redirect("/")
+            return redirect(f'/users/{user.user_id}')
         else:
             flash("Invalid credentials")
             return redirect("/login")
