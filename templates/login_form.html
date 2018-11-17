@@ -1,20 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class=flashes>
-    {% for message in messages %}
-      <li>{{ message }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
-
 
 <h1>Login</h1><br>
-<form action='/login'>
+<form action='/login-attempt'>
 	Email:<input type="text" name="email" required>
 	Password:<input type="text" name="password" required>
 	<input type ="submit">
 </form>
+
+<h3>Not a member?</h3>
+<a href="/register">Register now</a> 
 {% endblock %}

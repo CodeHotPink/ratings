@@ -57,6 +57,29 @@ def register_process():
 def login_form():
     return render_template("login_form.html",)
 
+@app.route('/login-attempt')
+def login_request():
+    password = request.args.get("password")
+    email = request.args.get("email")
+    if User.query.filter_by(email=email).first():
+        user = User.query.filter_by(email=email).first()
+        if user.password == password:
+            session[user.email] = True
+            flash('You are successfully logged in.')
+            return redirect("/")
+        else:
+            flash("Invalid credentials")
+            return redirect("/login")
+    else:
+        flash("That email is not in our system")
+        return redirect ("/login")
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash("You are successfully logged out")
+    return redirect("/")
+
 
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the
