@@ -6,7 +6,7 @@ from flask import (Flask, render_template, redirect, request, flash, session)
 # from flask_debugtoolbar import DebugToolbarExtension
 
 from model import User, Rating, Movie, connect_to_db, db
-
+from correlation import pearson
 
 app = Flask(__name__)
 
@@ -35,15 +35,34 @@ def movies_list():
 def movie_details(movie_id):
     movie = Movie.query.get(movie_id)
     movie_ratings = Rating.query.filter_by(movie_id=movie_id).all()
-    return render_template('movie.html', movie=movie,
-                                        movie_ratings=movie_ratings)
+    user_id = session.get('user_id', False)
 
-@app.route('/add_rating', methods=['POST'])
-def add_rating():
+    if user_id:
+        user_rating = Rating.query.filter_by(
+            movie_id=movie_id, user_id=user_id).first()
+
+    else:
+        user_rating = None
+    return render_template('movie.html', movie=movie,
+                                        movie_ratings=movie_ratings,
+                                        user_rating=user_rating)
+
+@app.route('/movies/<int:movie_id>/add_rating', methods=['POST'])
+def add_rating(movie_id):
+    movie = Movie.query.get(movie_id)
+    movie_id = movie.movie_id
     score = request.form.get("score")
     user_id = session['user_id']
-    rating = Rating(movie_id=)
-
+    rating = Rating.query.filter_by(user_id=user_id, movie_id=movie_id).first()
+    if rating:
+        rating.score = score
+        flash("Rating updated")
+    else:
+        rating = Rating(movie_id=movie_id,score=score, user_id=user_id)
+        flash("Rating successfully added")
+        db.session.add(rating)
+    db.session.commit()
+    return redirect('/movies/{}'.format(movie_id))
 
 @app.route('/users')
 def user_list():
@@ -95,7 +114,7 @@ def login_request():
         if user.password == password:
             session["user_id"] = user.user_id
             flash('You are successfully logged in.')
-            return redirect(f'/users/{user.user_id}')
+            return redirect('/users/{}'.format(user.user_id))
         else:
             flash("Invalid credentials")
             return redirect("/login")

@@ -1,6 +1,7 @@
 """Models and database functions for Ratings project."""
 
 from flask_sqlalchemy import SQLAlchemy
+from correlation import pearson
 
 # This is the connection to the PostgreSQL database; we're getting this through
 # the Flask-SQLAlchemy helper library. On this, we can find the `session`
@@ -25,7 +26,43 @@ class User(db.Model):
     age = db.Column(db.Integer, nullable=True)
     zipcode = db.Column(db.String(15), nullable=True)
 
-  
+    def similarity(self, other):
+        """Return Pearson rating for user compared to other user."""
+
+        u_ratings = {}
+        paired_ratings = []
+
+        for r in self.ratings:
+            u_ratings[r.movie_id] = r
+
+        for r in other.ratings:
+            u_r = u_ratings.get(r.movie_id)
+            if u_r:
+                paired_ratings.append( (u_r.score, r.score) )
+
+        if paired_ratings:
+            return pearson(paired_ratings)
+
+        else:
+            return 0.0
+
+    def predict_rating(self, movie):
+        """Predict user's rating of a movie."""
+
+        other_ratings = movie.ratings
+        other_users = [ r.user_id for r in other_ratings ]
+
+        similarities = [
+            (self.similarity(other_user), other_user)
+            for other_user in other_users
+        ]
+
+        similarities.sort(reverse=True)
+        sim, best_match_user = similarities[0]
+
+        for rating in other_ratings:
+            if rating.user_id == best_match_user.user_id:
+                return rating.score * sim
 
 
 # Put your Movie and Rating model classes here.
@@ -43,7 +80,7 @@ class Movie(db.Model):
 
     def __repr__(self):
         """Provide helpful representation when printed"""
-        return f"<Movie Title = {self.title}>"
+        return("<Movie Title = {}>".format(self.title))
 
 
 class Rating(db.Model):
@@ -73,10 +110,9 @@ class Rating(db.Model):
                             backref=db.backref("ratings",
                                                 order_by=rating_id))
 
-    def __repr__(self):
-        """Provide helpful representation when printed"""
-        return f"<Movie ID: {self.movie_id} was rated {self.score}/5 by User {self.user_id} >"
-
+    # def __repr__(self):
+    #     """Provide helpful representation when printed"""
+    #     return("<Movie ID: {} was rated {}/5 by User {} >".format(self.movie_id, self.score, self.user_id))
 
 
 
@@ -96,7 +132,6 @@ def connect_to_db(app):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.app = app
     db.init_app(app)
-
 
 if __name__ == "__main__":
     # As a convenience, if we run this module interactively, it will leave

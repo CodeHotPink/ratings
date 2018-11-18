@@ -1,17 +1,34 @@
 {% extends 'base.html' %}
 {% block content %}
+  <br>
+  <a href="/movies">Return to the movies list</a>
   <h2>{{movie.title }}</h2>
   <h2>Movie Ratings:</h2>
-  <h3>Add a rating?</h3>
-  <form action="/add_rating" method="post">
-    <input type="radio" name="score" value="1"> 1 <br>
-    <input type="radio" name="score" value="2"> 2 <br>
-    <input type="radio" name="score" value="3" checked> 3 <br>
-    <input type="radio" name="score" value="4"> 4 <br>
-    <input type="radio" name="score" value="5"> 5 <br>
-    <input type = "submit">
-</form>
-
+  {% if session.get('user_id', False) %}
+    {% if user_rating %}
+      <h2>Your rating is {{user_rating.score}}</h2>
+      <h3>Update your rating?</h3>
+      <form action="/movies/{{ movie.movie_id }}/add_rating" method="post">
+        <input type="radio" name="score" value="1"> 1 <br>
+        <input type="radio" name="score" value="2"> 2 <br>
+        <input type="radio" name="score" value="3" checked> 3 <br>
+        <input type="radio" name="score" value="4"> 4 <br>
+        <input type="radio" name="score" value="5"> 5 <br>
+        <input type = "submit">
+      </form>
+    {% else %}
+    <h3>Add a rating?</h3>
+      <form action="/movies/{{ movie.movie_id }}/add_rating" method="post">
+        <input type="radio" name="score" value="1"> 1 <br>
+        <input type="radio" name="score" value="2"> 2 <br>
+        <input type="radio" name="score" value="3" checked> 3 <br>
+        <input type="radio" name="score" value="4"> 4 <br>
+        <input type="radio" name="score" value="5"> 5 <br>
+        <input type = "submit">
+      </form>
+      {% endif %}
+  {% endif %}
+    <br>
    {% for rating in movie_ratings %}
     <li>
       <a href="/users/{{ rating.user_id }}">
